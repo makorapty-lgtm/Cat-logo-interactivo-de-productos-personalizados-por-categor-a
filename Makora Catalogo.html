@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Makora — Catálogo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body { background: #F6F2EB; color: #13224A; -webkit-font-smoothing: antialiased; }
+    button { font-family: inherit; }
+
+    .m-container { width: min(1200px, 100% - 48px); margin: 0 auto; }
+
+    /* Buttons */
+    .m-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      border-radius: 8px; cursor: pointer; transition: transform .15s ease, background .2s, color .2s, border-color .2s;
+      font-weight: 600; font-family: var(--ui); border: 1px solid transparent;
+      text-decoration: none; line-height: 1;
+    }
+    .m-btn:active { transform: translateY(1px); }
+    .m-btn-primary { background: var(--accent); color: #fff; }
+    .m-btn-primary:hover { background: var(--accent-deep); }
+    .m-btn-outline { background: transparent; color: var(--ink); border: 1px solid color-mix(in oklab, var(--ink) 18%, transparent); }
+    .m-btn-outline:hover { border-color: var(--ink); }
+    .m-btn-ghost {
+      background: var(--surface); color: var(--ink);
+      border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent);
+    }
+    .m-btn-ghost:hover { background: var(--cream-1); }
+    .m-btn-ghost-on-img {
+      background: rgba(255,255,255,.95); color: var(--ink);
+      border: 1px solid color-mix(in oklab, var(--ink) 8%, transparent);
+    }
+    .m-btn-ghost-on-img:hover { background: #fff; }
+
+    /* Card hover */
+    .m-card { transition: transform .25s ease, box-shadow .25s ease; }
+    .m-card:hover { transform: translateY(-2px); border-color: color-mix(in oklab, var(--accent) 35%, transparent) !important; }
+    .m-card-hover { opacity: 0; transform: translateY(6px); transition: all .2s ease; pointer-events: none; }
+    .m-card:hover .m-card-hover { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+    /* Cat tile hover */
+    .m-cat:hover { transform: translateY(-2px); border-color: color-mix(in oklab, var(--accent) 35%, transparent) !important; }
+    .m-cat { transition: transform .25s ease, border-color .2s ease; }
+
+    input::placeholder, textarea::placeholder { color: color-mix(in oklab, var(--ink) 35%, transparent); }
+
+    /* Modal */
+    @media (max-width: 880px) {
+      .m-modal { grid-template-columns: 1fr !important; max-height: 96vh !important; overflow: auto !important; }
+    }
+
+    /* Hero collage */
+    @media (max-width: 920px) {
+      #hero-grid { grid-template-columns: 1fr !important; gap: 32px !important; padding: 24px 0 48px !important; }
+      #corp-grid, #final-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+      #footer-grid { grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+      .m-cat-grid { grid-template-columns: 1fr !important; }
+      .m-process { grid-template-columns: 1fr 1fr !important; }
+      .m-step-arrow { display: none; }
+      .m-seasons { grid-template-columns: 1fr 1fr !important; }
+    }
+    @media (max-width: 600px) {
+      .m-container { width: min(1200px, 100% - 32px); }
+      #footer-grid { grid-template-columns: 1fr !important; }
+      .m-process { grid-template-columns: 1fr !important; }
+      .m-seasons { grid-template-columns: 1fr 1fr !important; }
+    }
+
+    /* Native form elements inherit color in dark */
+    select, input, textarea { color: inherit; }
+
+    /* FAB pulse */
+    .m-fab { animation: makoraPulse 2.4s ease-in-out infinite; }
+    @keyframes makoraPulse {
+      0%, 100% { box-shadow: 0 14px 30px -8px rgba(37,211,102,.55), 0 0 0 0 rgba(37,211,102,.4); }
+      50% { box-shadow: 0 14px 30px -8px rgba(37,211,102,.55), 0 0 0 14px rgba(37,211,102,0); }
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="data.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" src="tweaks-panel.jsx"></script>
+  <script type="text/babel" src="primitives.jsx"></script>
+  <script type="text/babel" src="product.jsx"></script>
+  <script type="text/babel" src="filters.jsx"></script>
+  <script type="text/babel" src="sections.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+</body>
+</html>

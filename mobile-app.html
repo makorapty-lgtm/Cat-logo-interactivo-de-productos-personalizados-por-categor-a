@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Makora — Móvil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #F6F2EB; color: #13224A; font-family: 'Geist', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    button { font-family: inherit; cursor: pointer; }
+    :root {
+      --ink: #13224A; --surface: #fff; --cream-1: #F6F2EB; --cream-2: #EDE6D8;
+      --accent: #0F9787; --accent-deep: #0A6A60; --accent-soft: #E5F3F0;
+      --display: 'Geist', system-ui, sans-serif; --ui: 'Geist', system-ui, sans-serif; --mono: 'JetBrains Mono', monospace;
+    }
+    .m-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; cursor: pointer; font-weight: 600; border: 1px solid transparent; line-height: 1; transition: all .2s; }
+    .m-btn-primary { background: var(--accent); color: #fff; }
+    .m-btn-outline { background: transparent; color: var(--ink); border: 1px solid color-mix(in oklab, var(--ink) 18%, transparent); }
+    .m-btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid color-mix(in oklab, var(--ink) 12%, transparent); }
+    input::placeholder { color: color-mix(in oklab, var(--ink) 35%, transparent); }
+  </style>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="data.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" src="primitives.jsx"></script>
+  <script type="text/babel">
+    const cats = window.MAKORA_CATEGORIES;
+    const products = window.MAKORA_PRODUCTS;
+
+    function MobileApp() {
+      const [tab, setTab] = React.useState("home"); // home, catalogo, producto
+      const [drawer, setDrawer] = React.useState(false);
+      const [activeCat, setActiveCat] = React.useState(null);
+      const [openProd, setOpenProd] = React.useState(null);
+      const [activeFilters, setActiveFilters] = React.useState(2);
+
+      const filtered = activeCat ? products.filter(p => p.cat === activeCat) : products;
+
+      const goCatalog = (catId) => { setActiveCat(catId); setTab("catalogo"); };
+      const quote = (p) => {
+        const txt = p ? `Hola Makora 👋\nQuiero cotizar: *${p.name}*` : "Hola Makora 👋\nQuiero solicitar una cotización.";
+        window.open(`https://wa.me/50768374844?text=${encodeURIComponent(txt)}`, "_blank");
+      };
+
+      return (
+        <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "var(--cream-1)", overflow: "hidden" }}>
+          {/* Top bar */}
+          <header style={{ background: "var(--surface)", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, borderBottom: "1px solid color-mix(in oklab, var(--ink) 8%, transparent)", position: "sticky", top: 0, zIndex: 10 }}>
+            {tab !== "home" && (
+              <button onClick={() => setTab("home")} className="m-btn m-btn-ghost" style={{ padding: 7, borderRadius: 999 }}>
+                <Icon.arrow size={14}/>
+              </button>
+            )}
+            <MakoraLogo size={22} />
+            <div style={{ flex: 1 }}/>
+            <button onClick={() => quote()} className="m-btn m-btn-ghost" style={{ padding: "7px 10px", fontSize: 12 }}>
+              <Icon.whatsapp size={13}/>
+            </button>
+          </header>
+
+          {/* Body */}
+          <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", paddingBottom: tab === "home" ? 76 : 70 }}>
+            {tab === "home" && <HomeView onCat={goCatalog} onQuote={quote}/>}
+            {tab === "catalogo" && <CatalogView products={filtered} cat={activeCat} setCat={setActiveCat} openDrawer={() => setDrawer(true)} onProd={(p) => setOpenProd(p)} activeFilters={activeFilters}/>}
+          </div>
+
+          {/* Bottom nav */}
+          <nav style={{
+            position: "absolute", bottom: 0, left: 0, right: 0,
+            background: "var(--surface)", borderTop: "1px solid color-mix(in oklab, var(--ink) 10%, transparent)",
+            display: "grid", gridTemplateColumns: "repeat(4, 1fr)", padding: "8px 0 12px",
+          }}>
+            <NavItem icon={<Icon.grid size={18}/>} label="Inicio" active={tab==="home"} onClick={() => setTab("home")}/>
+            <NavItem icon={<Icon.search size={18}/>} label="Catálogo" active={tab==="catalogo"} onClick={() => { setActiveCat(null); setTab("catalogo"); }}/>
+            <NavItem icon={<Icon.bookmark size={18}/>} label="Guardados"/>
+            <NavItem icon={<Icon.whatsapp size={18}/>} label="Cotizar" onClick={() => quote()}/>
+          </nav>
+
+          {/* Filter drawer */}
+          {drawer && <MobileDrawer onClose={() => setDrawer(false)} setActiveFilters={setActiveFilters}/>}
+
+          {/* Quick view sheet */}
+          {openProd && <MobileSheet product={openProd} onClose={() => setOpenProd(null)} onQuote={quote}/>}
+        </div>
+      );
+    }
+
+    function NavItem({ icon, label, active, onClick }) {
+      return (
+        <button onClick={onClick} style={{
+          background: "transparent", border: "none", display: "flex", flexDirection: "column",
+          alignItems: "center", gap: 3, padding: "4px 0",
+          color: active ? "var(--accent-deep)" : "color-mix(in oklab, var(--ink) 55%, transparent)",
+          fontSize: 10.5, fontFamily: "var(--mono)", letterSpacing: ".04em",
+        }}>
+          {icon}
+          <span style={{ fontWeight: active ? 600 : 400 }}>{label}</span>
+        </button>
+      );
+    }
+
+    function HomeView({ onCat, onQuote }) {
+      return (
+        <div>
+          {/* Search */}
+          <div style={{ padding: "12px 16px 8px" }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: "var(--surface)", borderRadius: 999,
+              padding: "10px 14px",
+              border: "1px solid color-mix(in oklab, var(--ink) 8%, transparent)",
+            }}>
+              <Icon.search size={15}/>
+              <input placeholder="Busca tazas, hoodies, kits…" style={{ border: "none", background: "transparent", outline: "none", flex: 1, fontSize: 13, color: "var(--ink)", fontFamily: "var(--ui)" }}/>
+            </div>
+          </div>
+          {/* Hero */}
+          <section style={{ padding: "12px 16px 24px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 999, background: "color-mix(in oklab, var(--accent) 10%, transparent)", color: "var(--accent-deep)", fontSize: 10.5, fontFamily: "var(--mono)", letterSpacing: ".06em", textTransform: "uppercase" }}>
+              <span style={{ width: 5, height: 5, borderRadius: 999, background: "var(--accent)" }}/> Hecho en Panamá
+            </div>
+            <h1 style={{ margin: "12px 0 0", fontFamily: "var(--display)", fontWeight: 700, fontSize: 36, lineHeight: 1, letterSpacing: "-0.03em", color: "var(--ink)", textWrap: "balance" }}>
+              Productos personalizados <span style={{ color: "var(--accent)" }}>para tu idea.</span>
+            </h1>
+            <p style={{ margin: "12px 0 0", fontSize: 14, lineHeight: 1.5, color: "color-mix(in oklab, var(--ink) 70%, transparent)" }}>
+              Sublimación, vinil, vinil textil e impresión 3D. Cotiza tu idea y la hacemos realidad.
+            </p>
+            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+              <button onClick={() => onCat(null)} className="m-btn m-btn-primary" style={{ flex: 1, padding: "12px", fontSize: 13 }}>
+                Ver catálogo <Icon.arrow size={14}/>
+              </button>
+              <button onClick={onQuote} className="m-btn m-btn-outline" style={{ padding: "12px 14px", fontSize: 13 }}>
+                <Icon.whatsapp size={14}/>
+              </button>
+            </div>
+
+            {/* Visual */}
+            <div style={{ position: "relative", height: 180, marginTop: 20 }}>
+              <div style={{ position: "absolute", left: "0%", top: 0, width: "55%", transform: "rotate(-3deg)" }}>
+                <ProductPlaceholder label="HOODIE" sub="DTF" accent="#13224A" ratio="3/4" dense/>
+              </div>
+              <div style={{ position: "absolute", right: "5%", top: "10%", width: "45%", transform: "rotate(3deg)" }}>
+                <ProductPlaceholder label="TAZA 11oz" sub="Sublim." accent="#0F9787" ratio="1/1" dense/>
+              </div>
+            </div>
+          </section>
+
+          {/* Categories */}
+          <section style={{ padding: "8px 16px 24px" }}>
+            <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--accent-deep)" }}>Categorías</div>
+            <h2 style={{ margin: "6px 0 14px", fontFamily: "var(--display)", fontWeight: 700, fontSize: 22, letterSpacing: "-0.02em", color: "var(--ink)" }}>Explora por tipo</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              {cats.map(c => {
+                const count = products.filter(p => p.cat === c.id).length;
+                return (
+                  <button key={c.id} onClick={() => onCat(c.id)} style={{
+                    border: "1px solid color-mix(in oklab, var(--ink) 10%, transparent)",
+                    background: "var(--surface)", borderRadius: 12, overflow: "hidden",
+                    padding: 0, textAlign: "left", display: "flex", flexDirection: "column",
+                  }}>
+                    <ProductPlaceholder label={c.name.toUpperCase()} sub={`${count} prod.`} accent={c.accent} ratio="4/3" dense/>
+                    <div style={{ padding: "10px 12px" }}>
+                      <div style={{ fontFamily: "var(--display)", fontWeight: 600, fontSize: 13.5, color: "var(--ink)" }}>{c.name}</div>
+                      <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, color: "color-mix(in oklab, var(--ink) 55%, transparent)", marginTop: 2 }}>{count} productos</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* Process strip */}
+          <section style={{ padding: "0 16px 24px" }}>
+            <div style={{ background: "var(--surface)", borderRadius: 14, padding: 16, border: "1px solid color-mix(in oklab, var(--ink) 8%, transparent)" }}>
+              <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--accent-deep)" }}>Cómo funciona</div>
+              <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 10 }}>
+                {[["1","Elige producto"],["2","Define diseño"],["3","Recibe cotización"],["4","Producción"],["5","Entrega"]].map(([n, t]) => (
+                  <div key={n} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "var(--ink)" }}>
+                    <span style={{ width: 24, height: 24, borderRadius: 999, background: "color-mix(in oklab, var(--accent) 12%, transparent)", color: "var(--accent-deep)", display: "grid", placeItems: "center", fontFamily: "var(--mono)", fontWeight: 600, fontSize: 12, flexShrink: 0 }}>{n}</span>
+                    {t}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Final CTA */}
+          <section style={{ padding: "0 16px 24px" }}>
+            <div style={{ background: "var(--ink)", color: "var(--cream-1)", borderRadius: 14, padding: 18 }}>
+              <h3 style={{ margin: 0, fontFamily: "var(--display)", fontWeight: 700, fontSize: 18, letterSpacing: "-0.01em" }}>Cuéntanos qué necesitas</h3>
+              <p style={{ margin: "6px 0 14px", fontSize: 13, color: "color-mix(in oklab, var(--cream-1) 75%, transparent)", lineHeight: 1.5 }}>Respondemos cotizaciones en menos de 24h hábiles.</p>
+              <button onClick={onQuote} className="m-btn m-btn-primary" style={{ width: "100%", padding: "12px", fontSize: 13 }}>
+                <Icon.whatsapp size={14}/> Solicitar cotización
+              </button>
+            </div>
+          </section>
+        </div>
+      );
+    }
+
+    function CatalogView({ products, cat, setCat, openDrawer, onProd, activeFilters }) {
+      const catObj = cat ? cats.find(c => c.id === cat) : null;
+      return (
+        <div>
+          {/* Category chips */}
+          <div style={{ padding: "12px 16px 8px", display: "flex", gap: 6, overflowX: "auto", whiteSpace: "nowrap", scrollbarWidth: "none" }}>
+            <button onClick={() => setCat(null)} style={{
+              padding: "7px 14px", borderRadius: 999, fontSize: 12.5, flexShrink: 0,
+              border: !cat ? "1px solid var(--accent)" : "1px solid color-mix(in oklab, var(--ink) 14%, transparent)",
+              background: !cat ? "color-mix(in oklab, var(--accent) 12%, transparent)" : "var(--surface)",
+              color: !cat ? "var(--accent-deep)" : "var(--ink)", fontWeight: 500,
+            }}>Todos</button>
+            {cats.map(c => {
+              const sel = cat === c.id;
+              return (
+                <button key={c.id} onClick={() => setCat(c.id)} style={{
+                  padding: "7px 14px", borderRadius: 999, fontSize: 12.5, flexShrink: 0,
+                  border: sel ? "1px solid var(--accent)" : "1px solid color-mix(in oklab, var(--ink) 14%, transparent)",
+                  background: sel ? "color-mix(in oklab, var(--accent) 12%, transparent)" : "var(--surface)",
+                  color: sel ? "var(--accent-deep)" : "var(--ink)", fontWeight: 500,
+                }}>{c.short}</button>
+              );
+            })}
+          </div>
+          {/* Filter bar */}
+          <div style={{ padding: "8px 16px 12px", display: "flex", gap: 8, alignItems: "center" }}>
+            <button onClick={openDrawer} className="m-btn m-btn-ghost" style={{ padding: "8px 12px", fontSize: 12.5 }}>
+              <Icon.filter size={14}/> Filtros
+              {activeFilters > 0 && <span style={{ marginLeft: 4, background: "var(--accent)", color: "#fff", padding: "1px 6px", borderRadius: 999, fontSize: 10, fontFamily: "var(--mono)" }}>{activeFilters}</span>}
+            </button>
+            <select style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid color-mix(in oklab, var(--ink) 14%, transparent)", background: "var(--surface)", fontSize: 12, color: "var(--ink)" }}>
+              <option>Destacados</option>
+              <option>Más vendidos</option>
+              <option>Recientes</option>
+              <option>Precio</option>
+            </select>
+            <span style={{ marginLeft: "auto", fontFamily: "var(--mono)", fontSize: 11, color: "color-mix(in oklab, var(--ink) 55%, transparent)" }}>{products.length} prod.</span>
+          </div>
+          {/* Active filters chips */}
+          <div style={{ padding: "0 16px 8px", display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {catObj && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 8px 4px 10px", borderRadius: 999, background: "color-mix(in oklab, var(--accent) 10%, transparent)", color: "var(--accent-deep)", fontSize: 11.5 }}>
+                {catObj.name}
+                <button onClick={() => setCat(null)} style={{ border: "none", background: "transparent", color: "var(--accent-deep)", cursor: "pointer", padding: 0, display: "grid", placeItems: "center" }}><Icon.close size={10}/></button>
+              </span>
+            )}
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 8px 4px 10px", borderRadius: 999, background: "color-mix(in oklab, var(--accent) 10%, transparent)", color: "var(--accent-deep)", fontSize: 11.5 }}>
+              Personalizable
+              <button style={{ border: "none", background: "transparent", color: "var(--accent-deep)", cursor: "pointer", padding: 0, display: "grid", placeItems: "center" }}><Icon.close size={10}/></button>
+            </span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 8px 4px 10px", borderRadius: 999, background: "color-mix(in oklab, var(--accent) 10%, transparent)", color: "var(--accent-deep)", fontSize: 11.5 }}>
+              Hasta $25
+              <button style={{ border: "none", background: "transparent", color: "var(--accent-deep)", cursor: "pointer", padding: 0, display: "grid", placeItems: "center" }}><Icon.close size={10}/></button>
+            </span>
+          </div>
+          {/* Product grid */}
+          <div style={{ padding: "4px 16px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {products.slice(0, 20).map(p => (
+              <article key={p.id} onClick={() => onProd(p)} style={{
+                background: "var(--surface)", borderRadius: 12,
+                border: "1px solid color-mix(in oklab, var(--ink) 10%, transparent)",
+                padding: 8, display: "flex", flexDirection: "column", gap: 6,
+              }}>
+                <div style={{ position: "relative" }}>
+                  <ProductPlaceholder label={p.placeholder.label} sub={p.placeholder.sub} accent={cats.find(c => c.id === p.cat)?.accent} ratio="1/1" dense/>
+                  <StateBadge state={p.state}/>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 6 }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 9, letterSpacing: ".06em", textTransform: "uppercase", color: "color-mix(in oklab, var(--ink) 55%, transparent)" }}>{cats.find(c => c.id === p.cat)?.short}</span>
+                  <PersonalizableTag/>
+                </div>
+                <h3 style={{ margin: 0, fontFamily: "var(--display)", fontWeight: 600, fontSize: 13, lineHeight: 1.2, color: "var(--ink)" }}>{p.name}</h3>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--ink)" }}>
+                    {p.priceFrom != null ? <><span style={{ opacity: .6 }}>desde</span> <strong>${p.priceFrom}</strong></> : <span style={{ color: "var(--accent-deep)", fontWeight: 600 }}>Cotiza</span>}
+                  </span>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, color: "color-mix(in oklab, var(--ink) 55%, transparent)" }}>{p.lead}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    function MobileDrawer({ onClose, setActiveFilters }) {
+      return (
+        <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(19,34,74,.5)", zIndex: 30 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            position: "absolute", right: 0, top: 0, bottom: 0, width: "85%",
+            background: "var(--surface)", display: "flex", flexDirection: "column",
+          }}>
+            <div style={{ padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid color-mix(in oklab, var(--ink) 8%, transparent)" }}>
+              <strong style={{ fontFamily: "var(--display)", fontSize: 16 }}>Filtros</strong>
+              <button onClick={onClose} className="m-btn m-btn-ghost" style={{ padding: 7, borderRadius: 999 }}><Icon.close size={14}/></button>
+            </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+              {[
+                ["Categoría", ["Sublimación", "Textil", "Impresión 3D", "Corporativo", "Temporadas", "Packaging"]],
+                ["Técnica", ["Sublimación", "DTF", "Vinil", "Bordado", "Impresión 3D"]],
+                ["Ocasión", ["Regalo", "Evento", "Cumpleaños", "Navidad", "San Valentín"]],
+                ["Material", ["Cerámica", "Algodón", "PLA", "MDF", "Acero"]],
+                ["Precio", ["Hasta $10", "$10–$25", "$25–$50", "$50+"]],
+              ].map(([title, opts]) => (
+                <div key={title} style={{ marginBottom: 18 }}>
+                  <div style={{ fontFamily: "var(--display)", fontSize: 13, fontWeight: 600, color: "var(--ink)", marginBottom: 8 }}>{title}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {opts.map(o => (
+                      <span key={o} style={{
+                        padding: "5px 12px", borderRadius: 999, fontSize: 12,
+                        border: "1px solid color-mix(in oklab, var(--ink) 14%, transparent)",
+                        background: "var(--surface)", color: "var(--ink)",
+                      }}>{o}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ padding: 14, borderTop: "1px solid color-mix(in oklab, var(--ink) 8%, transparent)", display: "flex", gap: 8 }}>
+              <button onClick={() => setActiveFilters(0)} className="m-btn m-btn-ghost" style={{ flex: 1, padding: 11, fontSize: 12 }}>Limpiar</button>
+              <button onClick={onClose} className="m-btn m-btn-primary" style={{ flex: 2, padding: 11, fontSize: 12 }}>Ver resultados</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function MobileSheet({ product, onClose, onQuote }) {
+      const cat = cats.find(c => c.id === product.cat);
+      return (
+        <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(19,34,74,.5)", zIndex: 40, display: "flex", alignItems: "flex-end" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            background: "var(--surface)", borderRadius: "16px 16px 0 0", width: "100%",
+            maxHeight: "92%", overflowY: "auto", padding: 18,
+          }}>
+            <div style={{ width: 40, height: 4, background: "color-mix(in oklab, var(--ink) 15%, transparent)", borderRadius: 999, margin: "0 auto 14px" }}/>
+            <div style={{ padding: 0 }}>
+              <ProductPlaceholder label={product.placeholder.label} sub={product.placeholder.sub} accent={cat?.accent} ratio="4/3"/>
+            </div>
+            <div style={{ marginTop: 14 }}>
+              <div style={{ fontFamily: "var(--mono)", fontSize: 10.5, letterSpacing: ".08em", textTransform: "uppercase", color: "color-mix(in oklab, var(--ink) 55%, transparent)" }}>{cat?.name} · {product.technique}</div>
+              <h2 style={{ margin: "6px 0 8px", fontFamily: "var(--display)", fontWeight: 700, fontSize: 22, letterSpacing: "-0.02em", color: "var(--ink)" }}>{product.name}</h2>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <PersonalizableTag/>
+                <StateBadge state={product.state}/>
+              </div>
+              <p style={{ margin: "12px 0 14px", fontSize: 13.5, lineHeight: 1.5, color: "color-mix(in oklab, var(--ink) 75%, transparent)" }}>
+                Producto totalmente personalizable. Aplicamos {product.technique.toLowerCase()} con acabado profesional para que tu idea destaque.
+              </p>
+              {[
+                ["Material", product.material],
+                ["Variantes", product.colors.join(" · ")],
+                ["Pedido mínimo", product.min === 1 ? "1 unidad" : `${product.min} unidades`],
+                ["Tiempo de entrega", product.lead],
+                ["Precio", product.priceFrom != null ? `Desde $${product.priceFrom}` : "Cotización a la medida"],
+              ].map(([l, v]) => (
+                <div key={l} style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: 10, padding: "8px 0", borderBottom: "1px solid color-mix(in oklab, var(--ink) 6%, transparent)", fontSize: 13 }}>
+                  <span style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "color-mix(in oklab, var(--ink) 55%, transparent)" }}>{l}</span>
+                  <span style={{ color: "var(--ink)" }}>{v}</span>
+                </div>
+              ))}
+              <button onClick={() => onQuote(product)} className="m-btn m-btn-primary" style={{ width: "100%", padding: 13, fontSize: 13.5, marginTop: 16 }}>
+                <Icon.whatsapp size={15}/> Solicitar cotización
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<MobileApp/>);
+  </script>
+</body>
+</html>
